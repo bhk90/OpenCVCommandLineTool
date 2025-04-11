@@ -6,7 +6,8 @@
 ///		 一、（重要！）Workspace初始化必须按照以下示例：
 /// 
 ///			// 通过图像路径创建一个 MyImage 的 unique_ptr 对象，放入 workspace 中
-///			Workspace workspace(std::make_unique<MyImage>("image.jpg"));
+///			std::unique_ptr<Workspace> workspace; 
+///			workspace = std::make_unique<Workspace>(std::make_unique<MyImage>("image.jpg"));
 /// 
 ///		
 ///		 二、Workspace的功能：
