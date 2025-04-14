@@ -177,7 +177,7 @@ bool Workspace::saveToAnnotationFile() const {
 	if (!file) {
 		return false;
 	}
-	file << j.dump(4);
+	file << j.dump(-1);
 	return true;
 }
 
