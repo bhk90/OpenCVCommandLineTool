@@ -23,8 +23,9 @@ private:
     std::string label;                    // 标签名 (ex. G-, B+, ...)
     int shape_type;                       // 形状类别 (0: rectangle, 1: polygon, 2: mask)
     std::vector<Point> points;            // 形状所有点
-    cv::Rect bounding_rect;               // 由 points 推导出的最小包围矩形
     std::vector<int> rle_counts;          // 保存 RLE 格式的掩码，用于读写 JSON（如 COCO 格式）
+
+    cv::Rect bounding_rect;               // 由 points 推导出的最小包围矩形
     cv::Mat mask;                        // 实际用于图像处理与显示的掩码图像（CV_8UC1，0=背景，255=前景）
     std::vector<std::vector<Point>> history; // 点的历史记录
 
