@@ -101,7 +101,7 @@ std::vector<int> MyShape::run_length_encode(const cv::Mat& binary_mask) {
     return rle;
 }
 
-cv::Mat rle_decode_to_mask(const std::vector<int>& rle, int height, int width) {
+cv::Mat MyShape::rle_decode_to_mask(const std::vector<int>& rle, int height, int width) {
     cv::Mat mask = cv::Mat::zeros(height * width, 1, CV_8UC1);
     int idx = 0;
     uchar val = 0;
