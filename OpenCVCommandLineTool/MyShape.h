@@ -49,6 +49,7 @@ public:
 
     // RLE 掩码
     std::vector<int> run_length_encode(const cv::Mat& binary_mask);
+    cv::Mat rle_decode_to_mask(const std::vector<int>& rle, int height, int width);
     void clearRLE();
 };
 
