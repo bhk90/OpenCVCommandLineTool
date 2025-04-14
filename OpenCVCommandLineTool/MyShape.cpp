@@ -73,24 +73,34 @@ void MyShape::undoLastChange() {
 
 // RLE operations
 std::vector<int> MyShape::run_length_encode(const cv::Mat& binary_mask) {
-    std::vector<int> rle;
-    int count = 0;
-    uchar prev = 0;
+    CV_Assert(binary_mask.type() == CV_8UC1);
 
-    for (int i = 0; i < binary_mask.total(); ++i) {
-        uchar pixel = binary_mask.data[i];
-        if (pixel != prev) {
-            rle.push_back(count);
-            count = 1;
-            prev = pixel;
-        }
-        else {
-            ++count;
+    std::vector<int> rle;
+    int height = binary_mask.rows;
+    int width = binary_mask.cols;
+
+    uchar prev = 0;
+    int count = 0;
+
+    for (int x = 0; x < width; ++x) {
+        for (int y = 0; y < height; ++y) {
+            uchar pixel = binary_mask.at<uchar>(y, x);
+            pixel = pixel > 0 ? 1 : 0; // 二值化：确保只有0或1
+
+            if (pixel != prev) {
+                rle.push_back(count);
+                count = 1;
+                prev = pixel;
+            }
+            else {
+                ++count;
+            }
         }
     }
-    rle.push_back(count);
+    rle.push_back(count); // 加入最后一段
     return rle;
 }
+
 
 void MyShape::clearRLE() {
     rle_counts.clear();
