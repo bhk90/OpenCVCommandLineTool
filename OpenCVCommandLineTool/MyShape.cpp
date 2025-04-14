@@ -5,6 +5,8 @@
 ///      提供点的管理、标签操作、RLE掩码、历史记录等功能；
 ///      是标注系统中最核心的基础数据结构之一。
 /// 
+/// TODO: bounding_rect的初始化、更新
+/// 
 /// ----------------------- MyShape类 -----------------------
 
 
@@ -25,6 +27,10 @@ const std::string& MyShape::getLabel() const {
 
 int MyShape::getShapeType() const {
     return shape_type;
+}
+
+const cv::Rect& MyShape::getBoundingRect() const {
+    return bounding_rect;
 }
 
 const std::vector<int>& MyShape::getRLE() const {
@@ -51,6 +57,10 @@ void MyShape::setLabel(const std::string& new_label) {
 
 void MyShape::setShapeType(int type) {
     shape_type = type;
+}
+
+void MyShape::setBoundingRect(const cv::Rect& rect) {
+    bounding_rect = rect;
 }
 
 void MyShape::setRLE(const std::vector<int>& counts) {
@@ -109,8 +119,8 @@ std::vector<int> MyShape::run_length_encode(const cv::Mat& binary_mask) {
     return rle;
 }
 
-cv::Mat MyShape::rle_decode_to_mask(const std::vector<int>& rle, int height, int width) {
-    cv::Mat mask = cv::Mat::zeros(height * width, 1, CV_8UC1);
+cv::Mat MyShape::rle_decode_to_mask(const std::vector<int>& rle) {
+    cv::Mat mask = cv::Mat::zeros(bounding_rect.height * bounding_rect.width, 1, CV_8UC1);
     int idx = 0;
     uchar val = 0;
 
@@ -124,8 +134,8 @@ cv::Mat MyShape::rle_decode_to_mask(const std::vector<int>& rle, int height, int
     }
 
     // COCO 是列优先（column-major），要 reshape 再转置
-    cv::Mat reshaped = mask.reshape(1, width).t(); // t() 是转置
-    return reshaped.clone(); // 返回的是 rows=height, cols=width 的 CV_8UC1
+    cv::Mat reshaped = mask.reshape(1, bounding_rect.width).t(); // t() 是转置
+    return reshaped.clone(); // 返回的是 rows=bounding_rect.height, cols=bounding_rect.width 的 CV_8UC1
 }
 
 void MyShape::clearRLE() {

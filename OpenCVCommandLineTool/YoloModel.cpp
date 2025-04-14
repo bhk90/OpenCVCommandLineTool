@@ -88,6 +88,7 @@ std::vector<MyShape> YoloModel::infer(cv::Mat& image) {
         segmentOutput._boxMask.convertTo(binary_mask, CV_8U);
         std::vector<int> rle = shape.run_length_encode(binary_mask);
 
+        shape.setBoundingRect(b);
         shape.setMask(binary_mask);
         shape.setRLE(rle);
 
