@@ -101,6 +101,24 @@ std::vector<int> MyShape::run_length_encode(const cv::Mat& binary_mask) {
     return rle;
 }
 
+cv::Mat rle_decode_to_mask(const std::vector<int>& rle, int height, int width) {
+    cv::Mat mask = cv::Mat::zeros(height * width, 1, CV_8UC1);
+    int idx = 0;
+    uchar val = 0;
+
+    for (int len : rle) {
+        if (idx + len > mask.total()) break; // 防止越界
+        if (val == 1) {
+            std::memset(mask.data + idx, 255, len); // 前景设为255
+        }
+        idx += len;
+        val = 1 - val;
+    }
+
+    // COCO 是列优先（column-major），要 reshape 再转置
+    cv::Mat reshaped = mask.reshape(1, width).t(); // t() 是转置
+    return reshaped.clone(); // 返回的是 rows=height, cols=width 的 CV_8UC1
+}
 
 void MyShape::clearRLE() {
     rle_counts.clear();
