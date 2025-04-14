@@ -2,7 +2,7 @@
 /// 
 /// 说明：用于表示单个标注实例（如一个细胞或细菌）；
 ///      支持多种形状类型（矩形、多边形、掩码），
-///      提供点的管理、标签操作、RLE压缩、历史记录等功能；
+///      提供点的管理、标签操作、RLE掩码、历史记录等功能；
 ///      是标注系统中最核心的基础数据结构之一。
 /// 
 /// ----------------------- MyShape类 -----------------------
@@ -47,7 +47,7 @@ public:
     void saveHistory();
     void undoLastChange();
 
-    // RLE 操作
+    // RLE 掩码
     std::vector<int> run_length_encode(const cv::Mat& binary_mask);
     void clearRLE();
 };
