@@ -35,6 +35,10 @@ bool MyShape::hasRLE() const {
     return !rle_counts.empty();
 }
 
+const cv::Mat& MyShape::getMask() const {
+    return mask;
+}
+
 // Setter implementations
 void MyShape::setPoints(const std::vector<Point>& new_points) {
     saveHistory();
@@ -51,6 +55,10 @@ void MyShape::setShapeType(int type) {
 
 void MyShape::setRLE(const std::vector<int>& counts) {
     rle_counts = counts;
+}
+
+void MyShape::setMask(const cv::Mat& mask_mat) {
+    mask = mask_mat;
 }
 
 // Point operations
