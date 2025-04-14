@@ -80,9 +80,9 @@ std::vector<MyShape> YoloModel::infer(cv::Mat& image) {
 
         const cv::Rect& b = segmentOutput._box;
         shape.addPoint(b.x, b.y);
-        shape.addPoint(b.x + b.width, b.y);
+        //shape.addPoint(b.x + b.width, b.y);
         shape.addPoint(b.x + b.width, b.y + b.height);
-        shape.addPoint(b.x, b.y + b.height);
+        //shape.addPoint(b.x, b.y + b.height);
 
         cv::Mat binary_mask;
         segmentOutput._boxMask.convertTo(binary_mask, CV_8U);
