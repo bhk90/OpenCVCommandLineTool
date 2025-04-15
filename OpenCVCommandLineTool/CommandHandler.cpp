@@ -251,8 +251,11 @@ void CommandHandler::commandModelProcessing(const std::vector<std::string>& args
 		return;
 	}
 	if (args.size() == 1) {
-		workspace->runYoloModelProcessor(args[0]);
-		workspace->saveToAnnotationFile();
+		workspace->runYoloModelProcessor(args[0]); //运行模型保存结果至workspace
+		workspace->saveToAnnotationFile(); //创建并保存JSON
+		const cv::Mat& mask_image = workspace->getMaskImage(); //得到掩码图像
+		cv::imshow("mask image", mask_image);
+		cv::waitKey(0);
 	}
 }
 
