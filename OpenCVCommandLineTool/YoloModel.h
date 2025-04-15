@@ -26,6 +26,11 @@ struct SegmentOutput {
     cv::Mat _boxMask;
 };
 
+struct YoloInferenceResult {
+    std::vector<MyShape> shapes;
+    cv::Mat draw_result;
+};
+
 class YoloModel {
 public:
     /// ----------------------- 模型初始化与推理 -----------------------
@@ -35,7 +40,8 @@ public:
     YoloModel(const std::string& model_path);
 
     // 对输入图像进行推理，输出识别到的标注
-    std::vector<MyShape> infer(cv::Mat& image);
+    YoloInferenceResult infer(cv::Mat& image);
+
 
 private:
     torch::jit::script::Module model;
@@ -45,6 +51,15 @@ private:
     /// ----------------------- 图像预处理与结果可视化 -----------------------
     /// 说明：用于模型推理前的图像预处理（如resize、letterbox）；
     ///      以及将推理结果绘制在图像上的辅助方法。
+    
+    torch::Tensor preprocessImage(const cv::Mat& resize_image);
+    std::tuple<at::Tensor, at::Tensor> runInference(const torch::Tensor& image_tensor);
+    void processDetections(const at::Tensor& main_output, const at::Tensor& mask_output,
+        std::vector<cv::Rect>& boxes, std::vector<int>& class_ids,
+        std::vector<float>& confidences, std::vector<cv::Mat>& masks);
+    std::vector<MyShape> createShapes(const std::vector<int>& nms_indexes, const std::vector<cv::Rect>& boxes,
+        const std::vector<int>& class_ids, const std::vector<float>& confidences,
+        const std::vector<cv::Mat>& masks, std::vector<SegmentOutput>& segmentOutputs);
 
     // 对图像进行 Letterbox 操作，保持纵横比
     static std::vector<float> Letterbox(const cv::Mat& src, cv::Mat& dst, const cv::Size& out_size);
