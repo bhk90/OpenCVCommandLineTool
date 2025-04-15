@@ -203,15 +203,12 @@ bool Workspace::saveToAnnotationFile() const {
 
 /// ----------------------- Yolo模型相关 -----------------------
 // 初始化YoloModelProcessor
-void Workspace::initYoloModelProcessor(const std::string& model_path) {
+void Workspace::runYoloModelProcessor(const std::string& model_path) {
 	yolo_model_processor = std::make_unique<YoloModelProcessor>(model_path);
-}
-
-// 执行模型并将结果存于shapes
-void Workspace::runYoloOnImage() {
-	if (yolo_model_processor) {
-		shapes = yolo_model_processor->detectShapes(image->getImageMat());
-	}
+	yolo_model_processor->infer(image->getImageMat());
+	
+	shapes = yolo_model_processor->getShapes();
+	mask_image = yolo_model_processor->getDrawResult();
 }
 
 
@@ -239,4 +236,8 @@ int Workspace::getImageHeight() const {
 // 获取所有标注
 const std::vector<MyShape>& Workspace::getShapes() const {
 	return shapes;
+}
+
+const cv::Mat& Workspace::getMaskImage() const {
+	return mask_image;
 }

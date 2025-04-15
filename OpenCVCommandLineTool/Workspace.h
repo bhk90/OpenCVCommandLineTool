@@ -33,6 +33,7 @@
 
 #include <vector>
 #include <string>
+#include <opencv2/opencv.hpp>
 #include "MyShape.h"
 #include "MyImage.h"
 #include "YoloModelProcessor.h"
@@ -47,6 +48,7 @@ private:
 	const std::string annotation_path;
 	
 	std::unique_ptr<YoloModelProcessor> yolo_model_processor;
+	cv::Mat mask_image; // 带有掩码和边界框的图像，通过runYoloModelProcessor生成
 
 public:
 	Workspace(std::unique_ptr<MyImage> img);
@@ -86,11 +88,7 @@ public:
 
 	/// ----------------------- Yolo模型相关 -----------------------
 	// 初始化YoloModelProcessor
-	void initYoloModelProcessor(const std::string& model_path);
-
-	// 执行模型并将结果存于shapes
-	void runYoloOnImage();
-
+	void runYoloModelProcessor(const std::string& model_path);
 
 
 	/// ----------------------- get/set -----------------------
@@ -105,6 +103,8 @@ public:
 
 	// 获取所有标注
 	const std::vector<MyShape>& getShapes() const;
+
+	const cv::Mat& getMaskImage() const;
 };
 
 #endif // WORKSPACE_H
