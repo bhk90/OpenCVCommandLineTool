@@ -4,7 +4,7 @@ YoloModelProcessor::YoloModelProcessor(const std::string& model_path) {
     yolo_model = std::make_unique<YoloModel>(model_path);
 }
 
-void YoloModelProcessor::detectShapes(cv::Mat& image) {
+void YoloModelProcessor::infer(cv::Mat& image) {
     inference_result = yolo_model->infer(image);
 }
 

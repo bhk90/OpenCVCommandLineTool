@@ -29,7 +29,7 @@ public:
     YoloModelProcessor(const std::string& model_path);
 
     // 对图像执行推理，返回转换为 MyShape 的结果列表
-    void detectShapes(cv::Mat& image);
+    void infer(cv::Mat& image);
 
     // 返回对 shapes 的引用
     std::vector<MyShape>& getShapes();
