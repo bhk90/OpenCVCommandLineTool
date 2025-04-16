@@ -37,11 +37,14 @@ namespace fs = std::filesystem;
 /// ----------------------- 构造函数 -----------------------
 Workspace::Workspace(std::unique_ptr<MyImage> img)
 	: image(std::move(img)),
-	  image_path(image->getImagePath()),
-	  annotation_path((fs::path(image_path).parent_path() /
-		  (fs::path(image_path).stem().string() + ".json")).string()) {
+	image_path(image->getImagePath()),
+	annotation_path((fs::path(image_path).parent_path() /
+		(fs::path(image_path).stem().string() + ".json")).string()),
+	mask_path((fs::path(image_path).parent_path() /
+		(fs::path(image_path).stem().string() + "_mask.png")).string()) {
 	loadFromAnnotationFile();
 }
+
 
 
 /// ----------------------- 获取 MyImage 引用 -----------------------
@@ -125,6 +128,11 @@ bool Workspace::loadFromAnnotationFile() {
 	return true;
 }
 
+//生成PNG掩码图片
+void Workspace::saveBinaryMaskAsPng() {
+	cv::imwrite(mask_path, binary_mask);
+};
+
 // 新建标注文件
 void Workspace::createAnnotationFile() {
 	if (!fs::exists(annotation_path)) {
@@ -200,6 +208,11 @@ std::string Workspace::getImagePath() const {
 // 获取标注文件路径
 std::string Workspace::getAnnotationPath() const {
 	return annotation_path;
+}
+
+// 获取掩码图像路径
+std::string Workspace::getMaskPath() const {
+	return mask_path;
 }
 
 // 获取图像宽度

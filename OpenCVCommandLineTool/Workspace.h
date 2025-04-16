@@ -45,6 +45,7 @@ private:
 
 	const std::string image_path;
 	const std::string annotation_path;
+	const std::string mask_path;
 	
 	std::unique_ptr<YoloModelProcessor> yolo_model_processor;
 
@@ -85,6 +86,8 @@ public:
 	// 保存标注文件
 	bool saveToAnnotationFile() const;
 
+	/// ----------------------- 生成PNG掩码图像 -----------------------
+	void saveBinaryMaskAsPng();
 
 	/// ----------------------- Yolo模型相关 -----------------------
 	// 运行YoloModelProcessor
@@ -97,6 +100,8 @@ public:
 	std::string getImagePath() const;
 	// 获取标注文件路径
 	std::string getAnnotationPath() const;
+	// 获取掩码图像路径
+	std::string getMaskPath() const;
 
 	// 获取图像尺寸
 	int getImageWidth() const;

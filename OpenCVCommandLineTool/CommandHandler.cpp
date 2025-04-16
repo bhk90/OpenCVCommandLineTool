@@ -253,6 +253,7 @@ void CommandHandler::commandModelProcessing(const std::vector<std::string>& args
 	if (args.size() == 1) {
 		workspace->runYoloModelProcessor(args[0]);
 		workspace->saveToAnnotationFile();
+		workspace->saveBinaryMaskAsPng();
 	}
 }
 
