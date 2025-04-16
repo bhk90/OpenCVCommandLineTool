@@ -85,8 +85,8 @@ public:
 
 
 	/// ----------------------- Yolo模型相关 -----------------------
-	// 初始化YoloModelProcessor
-	void initYoloModelProcessor(const std::string& model_path);
+	// 运行YoloModelProcessor
+	void runYoloModelProcessor(const std::string& model_path);
 
 
 

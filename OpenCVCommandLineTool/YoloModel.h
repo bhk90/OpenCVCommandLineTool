@@ -18,7 +18,7 @@
 #include "MyShape.h"
 
 /// ----------------------- 模型推理结构体 -----------------------
-/// 用于存储模型的中间输出结果，包括类别、置信度、矩形框及掩码。
+/// 用于存储模型的推理结构体，包括类别、置信度、矩形框及掩码。
 struct SegmentOutput {
     int _id;
     float _confidence;
@@ -53,7 +53,7 @@ private:
     static cv::Rect toBox(const cv::Mat& input, const cv::Rect& range);
 
     // 将推理结果绘制到图像上（调试或可视化用）
-    static void draw_result(cv::Mat& image, std::vector<SegmentOutput>& results);
+    static void draw_result(cv::Mat& image, std::vector<SegmentOutput>& results, cv::Mat& mask);
 };
 
 #endif // YOLOMODEL_H

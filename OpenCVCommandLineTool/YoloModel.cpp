@@ -76,29 +76,19 @@ std::vector<MyShape> YoloModel::infer(cv::Mat& image) {
         segmentOutputs.push_back(segmentOutput);
 
         std::string label = std::to_string(class_ids[index]);
-        MyShape shape(label, 2);
-
         const cv::Rect& b = segmentOutput._box;
+
+        MyShape shape(label, 2);
         shape.addPoint(b.x, b.y);
-        //shape.addPoint(b.x + b.width, b.y);
         shape.addPoint(b.x + b.width, b.y + b.height);
-        //shape.addPoint(b.x, b.y + b.height);
-
-        cv::Mat binary_mask;
-        segmentOutput._boxMask.convertTo(binary_mask, CV_8U);
-        std::vector<int> rle = shape.run_length_encode(binary_mask);
-
-        shape.setBoundingRect(b);
-        shape.setMask(binary_mask);
-        shape.setRLE(rle);
-
         shapes.push_back(shape);
     }
 
-    /*draw_result(resize_image, segmentOutputs);
-    cv::imshow("resize_image", resize_image);
+    cv::Mat binary_mask;
+    draw_result(resize_image, segmentOutputs, binary_mask);
+    cv::imshow("mask", binary_mask);
     cv::waitKey(0);
-    cv::destroyAllWindows();*/
+    cv::destroyAllWindows();
 
     return shapes;
 }
@@ -138,11 +128,10 @@ cv::Rect YoloModel::toBox(const cv::Mat& input, const cv::Rect& range) {
     return box & range;
 }
 
-void YoloModel::draw_result(cv::Mat& image, std::vector<SegmentOutput>& results) {
-    cv::Mat mask = image.clone();
+void YoloModel::draw_result(cv::Mat& image, std::vector<SegmentOutput>& results, cv::Mat& mask) {
+    mask = cv::Mat::zeros(image.size(), CV_8UC1); // 创建一个黑色遮罩
+
     for (const SegmentOutput& result : results) {
-        cv::rectangle(image, result._box, cv::Scalar(0, 255, 0), 2, 8);
-        mask(result._box).setTo(cv::Scalar(0, 0, 255), result._boxMask);
+        mask(result._box).setTo(255, result._boxMask); // 在遮罩区域内设置为白色
     }
-    cv::addWeighted(image, 0.5, mask, 0.8, 1, image);
 }

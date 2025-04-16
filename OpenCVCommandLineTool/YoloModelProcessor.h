@@ -28,7 +28,7 @@ public:
     YoloModelProcessor(const std::string& model_path);
 
     // 对图像执行推理，返回转换为 MyShape 的结果列表
-    std::vector<MyShape> detectShapes(cv::Mat& image);
+    std::vector<MyShape> infer(cv::Mat& image);
 };
 
 #endif // YOLOMODEL_PROCESSOR_H

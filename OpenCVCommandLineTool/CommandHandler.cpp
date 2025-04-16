@@ -251,8 +251,7 @@ void CommandHandler::commandModelProcessing(const std::vector<std::string>& args
 		return;
 	}
 	if (args.size() == 1) {
-		workspace->initYoloModelProcessor(args[0]);
-		workspace->runYoloOnImage();
+		workspace->runYoloModelProcessor(args[0]);
 		workspace->saveToAnnotationFile();
 	}
 }

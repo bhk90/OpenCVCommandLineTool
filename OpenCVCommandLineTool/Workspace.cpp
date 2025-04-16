@@ -165,9 +165,10 @@ bool Workspace::saveToAnnotationFile() const {
 
 
 /// ----------------------- Yolo模型相关 -----------------------
-// 初始化YoloModelProcessor
-void Workspace::initYoloModelProcessor(const std::string& model_path) {
+// 运行YoloModelProcessor
+void Workspace::runYoloModelProcessor(const std::string& model_path) {
 	yolo_model_processor = std::make_unique<YoloModelProcessor>(model_path);
+	shapes = yolo_model_processor->infer(image->getImageMat());
 }
 
 
