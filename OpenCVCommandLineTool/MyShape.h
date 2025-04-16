@@ -18,11 +18,21 @@
 #include <vector>
 #include <string>
 
+/// ----------------------- 模型推理结构体 -----------------------
+/// 用于存储模型的推理结构体，包括类别、置信度、矩形框及掩码。
+struct SegmentOutput {
+    int _id;
+    float _confidence;
+    cv::Rect2f _box;
+    cv::Mat _boxMask;
+};
+
 class MyShape {
 private:
     std::string label;                    // 标签名 (ex. G-, B+, ...)
     int shape_type;                       // 形状类别 (0: rectangle, 1: polygon, 2: mask)
     std::vector<Point> points;            // 形状所有点
+    SegmentOutput segment;                // 用于存储模型的推理结构体，包括类别、置信度、矩形框及掩码。
     
     std::vector<std::vector<Point>> history; // 点的历史记录
 
@@ -33,11 +43,13 @@ public:
     const std::vector<Point>& getPoints() const;
     const std::string& getLabel() const;
     int getShapeType() const;
+    const SegmentOutput& getSegmentOutput() const;
 
     // Set 方法
     void setPoints(const std::vector<Point>& points);
     void setLabel(const std::string& label);
     void setShapeType(int type);
+    void setSegmentOutput(const SegmentOutput& segment_output);
 
     // 点操作
     void addPoint(double x, double y);

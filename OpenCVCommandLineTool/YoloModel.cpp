@@ -7,7 +7,7 @@ YoloModel::YoloModel(const std::string& model_path)
     model.eval();
 }
 
-std::vector<MyShape> YoloModel::infer(cv::Mat& image) {
+void YoloModel::infer(cv::Mat& image) {
     //cv::Mat image = cv::imread(image_path);
     cv::Mat resize_image;
     std::vector<float> pad_info = Letterbox(image, resize_image, cv::Size(640, 640));
@@ -73,24 +73,26 @@ std::vector<MyShape> YoloModel::infer(cv::Mat& image) {
         m = m.reshape(1, 160);
         cv::resize(m(mask_boxes[index]) > 0.5f, segmentOutput._boxMask, segmentOutput._box.size());
 
-        segmentOutputs.push_back(segmentOutput);
-
         std::string label = std::to_string(class_ids[index]);
         const cv::Rect& b = segmentOutput._box;
 
         MyShape shape(label, 2);
         shape.addPoint(b.x, b.y);
         shape.addPoint(b.x + b.width, b.y + b.height);
+        shape.setSegmentOutput(segmentOutput);
         shapes.push_back(shape);
+
+        segmentOutputs.push_back(segmentOutput);
     }
 
     cv::Mat binary_mask;
     draw_result(resize_image, segmentOutputs, binary_mask);
-    cv::imshow("mask", binary_mask);
+    /*cv::imshow("mask", binary_mask);
     cv::waitKey(0);
-    cv::destroyAllWindows();
+    cv::destroyAllWindows();*/
 
-    return shapes;
+    // 初始化 unique_ptr， 传入右值
+    inference_result = std::make_unique<YoloInferenceResult>(std::move(shapes), std::move(binary_mask));
 }
 
 std::vector<float> YoloModel::Letterbox(const cv::Mat& src, cv::Mat& dst, const cv::Size& out_size) {
@@ -134,4 +136,9 @@ void YoloModel::draw_result(cv::Mat& image, std::vector<SegmentOutput>& results,
     for (const SegmentOutput& result : results) {
         mask(result._box).setTo(255, result._boxMask); // 在遮罩区域内设置为白色
     }
+}
+
+// 提供访问 inference_result 的方法
+const YoloInferenceResult* YoloModel::getInferenceResult() const {
+    return inference_result.get();
 }

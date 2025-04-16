@@ -48,6 +48,8 @@ private:
 	
 	std::unique_ptr<YoloModelProcessor> yolo_model_processor;
 
+	cv::Mat binary_mask;
+
 public:
 	Workspace(std::unique_ptr<MyImage> img);
 
@@ -102,6 +104,16 @@ public:
 
 	// 获取所有标注
 	const std::vector<MyShape>& getShapes() const;
+	
+	// 获取 binary_mask 的方法
+	const cv::Mat& getBinaryMask() const {
+		return binary_mask;
+	}
+
+	// 设置 binary_mask 的方法
+	void setBinaryMask(const cv::Mat& mask) {
+		binary_mask = mask;
+	}
 };
 
 #endif // WORKSPACE_H

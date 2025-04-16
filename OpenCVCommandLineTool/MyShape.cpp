@@ -29,6 +29,10 @@ int MyShape::getShapeType() const {
     return shape_type;
 }
 
+const SegmentOutput& MyShape::getSegmentOutput() const {
+    return segment;
+}
+
 
 // Setter implementations
 void MyShape::setPoints(const std::vector<Point>& new_points) {
@@ -42,6 +46,10 @@ void MyShape::setLabel(const std::string& new_label) {
 
 void MyShape::setShapeType(int type) {
     shape_type = type;
+}
+
+void MyShape::setSegmentOutput(const SegmentOutput& segment_output) {
+    segment = segment_output;
 }
 
 

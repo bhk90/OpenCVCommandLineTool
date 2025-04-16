@@ -152,13 +152,29 @@ bool Workspace::saveToAnnotationFile() const {
 		for (const auto& point : shape.getPoints()) {
 			shapeJson["points"].push_back({ {"x", point.x}, {"y", point.y} });
 		}
+
+		// 获取 SegmentOutput 并存储到 JSON
+		const SegmentOutput& segmentOutput = shape.getSegmentOutput();
+		shapeJson["segment_output"] = {
+			{"id", segmentOutput._id},
+			{"confidence", segmentOutput._confidence},
+			{"box", {
+				{"x", segmentOutput._box.x},
+				{"y", segmentOutput._box.y},
+				{"width", segmentOutput._box.width},
+				{"height", segmentOutput._box.height}
+			}}
+		};
+
+		// 将 shapeJson 添加到 shapes 数组中
+		j["shapes"].push_back(shapeJson);
 	}
 
 	std::ofstream file(annotation_path);
 	if (!file) {
 		return false;
 	}
-	file << j.dump(-1);
+	file << j.dump(4);
 	return true;
 }
 
@@ -168,7 +184,10 @@ bool Workspace::saveToAnnotationFile() const {
 // 运行YoloModelProcessor
 void Workspace::runYoloModelProcessor(const std::string& model_path) {
 	yolo_model_processor = std::make_unique<YoloModelProcessor>(model_path);
-	shapes = yolo_model_processor->infer(image->getImageMat());
+	yolo_model_processor->infer(image->getImageMat());
+
+	importShapes(yolo_model_processor->getShapes());
+	setBinaryMask(yolo_model_processor->getBinaryMask());
 }
 
 

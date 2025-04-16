@@ -17,13 +17,13 @@
 #include <vector>
 #include "MyShape.h"
 
-/// ----------------------- 模型推理结构体 -----------------------
-/// 用于存储模型的推理结构体，包括类别、置信度、矩形框及掩码。
-struct SegmentOutput {
-    int _id;
-    float _confidence;
-    cv::Rect2f _box;
-    cv::Mat _boxMask;
+struct YoloInferenceResult {
+    std::vector<MyShape> shapes;
+    cv::Mat binary_mask;
+
+    // 使用右值引用和 std::move 的构造函数
+    YoloInferenceResult(std::vector<MyShape>&& s, cv::Mat&& b)
+        : shapes(std::move(s)), binary_mask(std::move(b)) {}
 };
 
 class YoloModel {
@@ -35,12 +35,16 @@ public:
     YoloModel(const std::string& model_path);
 
     // 对输入图像进行推理，输出识别到的标注
-    std::vector<MyShape> infer(cv::Mat& image);
+    void infer(cv::Mat& image);
+
+    const YoloInferenceResult* getInferenceResult() const;
 
 private:
     torch::jit::script::Module model;
     float conf_threshold;
     float nms_threshold;
+
+    std::unique_ptr<YoloInferenceResult> inference_result = nullptr;
 
     /// ----------------------- 图像预处理与结果可视化 -----------------------
     /// 说明：用于模型推理前的图像预处理（如resize、letterbox）；
