@@ -5,7 +5,7 @@
 ///      提供点的管理、标签操作、RLE掩码、历史记录等功能；
 ///      是标注系统中最核心的基础数据结构之一。
 /// 
-/// TODO: bounding_rect的初始化、更新
+/// 
 /// 
 /// ----------------------- MyShape类 -----------------------
 
@@ -29,21 +29,6 @@ int MyShape::getShapeType() const {
     return shape_type;
 }
 
-const cv::Rect& MyShape::getBoundingRect() const {
-    return bounding_rect;
-}
-
-const std::vector<int>& MyShape::getRLE() const {
-    return rle_counts;
-}
-
-bool MyShape::hasRLE() const {
-    return !rle_counts.empty();
-}
-
-const cv::Mat& MyShape::getMask() const {
-    return mask;
-}
 
 // Setter implementations
 void MyShape::setPoints(const std::vector<Point>& new_points) {
@@ -59,17 +44,6 @@ void MyShape::setShapeType(int type) {
     shape_type = type;
 }
 
-void MyShape::setBoundingRect(const cv::Rect& rect) {
-    bounding_rect = rect;
-}
-
-void MyShape::setRLE(const std::vector<int>& counts) {
-    rle_counts = counts;
-}
-
-void MyShape::setMask(const cv::Mat& mask_mat) {
-    mask = mask_mat;
-}
 
 // Point operations
 void MyShape::addPoint(double x, double y) {
@@ -87,57 +61,4 @@ void MyShape::undoLastChange() {
         points = history.back();
         history.pop_back();
     }
-}
-
-// RLE operations
-std::vector<int> MyShape::run_length_encode(const cv::Mat& binary_mask) {
-    CV_Assert(binary_mask.type() == CV_8UC1);
-
-    std::vector<int> rle;
-    int height = binary_mask.rows;
-    int width = binary_mask.cols;
-
-    uchar prev = 0;
-    int count = 0;
-
-    for (int x = 0; x < width; ++x) {
-        for (int y = 0; y < height; ++y) {
-            uchar pixel = binary_mask.at<uchar>(y, x);
-            pixel = pixel > 0 ? 1 : 0; // 二值化：确保只有0或1
-
-            if (pixel != prev) {
-                rle.push_back(count);
-                count = 1;
-                prev = pixel;
-            }
-            else {
-                ++count;
-            }
-        }
-    }
-    rle.push_back(count); // 加入最后一段
-    return rle;
-}
-
-cv::Mat MyShape::rle_decode_to_mask(const std::vector<int>& rle) {
-    cv::Mat mask = cv::Mat::zeros(bounding_rect.height * bounding_rect.width, 1, CV_8UC1);
-    int idx = 0;
-    uchar val = 0;
-
-    for (int len : rle) {
-        if (idx + len > mask.total()) break; // 防止越界
-        if (val == 1) {
-            std::memset(mask.data + idx, 255, len); // 前景设为255
-        }
-        idx += len;
-        val = 1 - val;
-    }
-
-    // COCO 是列优先（column-major），要 reshape 再转置
-    cv::Mat reshaped = mask.reshape(1, bounding_rect.width).t(); // t() 是转置
-    return reshaped.clone(); // 返回的是 rows=bounding_rect.height, cols=bounding_rect.width 的 CV_8UC1
-}
-
-void MyShape::clearRLE() {
-    rle_counts.clear();
 }

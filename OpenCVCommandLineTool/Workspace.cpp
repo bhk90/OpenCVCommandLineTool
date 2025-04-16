@@ -120,15 +120,6 @@ bool Workspace::loadFromAnnotationFile() {
 		}
 
 		addShape(label, points, shape_type);
-
-		// 如果有 mask 字段，读取 RLE
-		if (shapeJson.contains("mask")) {
-			auto maskJson = shapeJson["mask"];
-			if (maskJson.contains("format") && maskJson["format"] == "rle") {
-				std::vector<int> counts = maskJson["counts"].get<std::vector<int>>();
-				shapes.back().setRLE(counts); // 设置 RLE 到刚添加的 shape
-			}
-		}
 	}
 
 	return true;
@@ -161,16 +152,6 @@ bool Workspace::saveToAnnotationFile() const {
 		for (const auto& point : shape.getPoints()) {
 			shapeJson["points"].push_back({ {"x", point.x}, {"y", point.y} });
 		}
-
-		// 添加 RLE 掩码支持
-		if (shape.hasRLE()) {
-			json maskJson;
-			maskJson["format"] = "rle";
-			maskJson["counts"] = shape.getRLE();
-			shapeJson["mask"] = maskJson;
-		}
-
-		j["shapes"].push_back(shapeJson);
 	}
 
 	std::ofstream file(annotation_path);
@@ -187,13 +168,6 @@ bool Workspace::saveToAnnotationFile() const {
 // 初始化YoloModelProcessor
 void Workspace::initYoloModelProcessor(const std::string& model_path) {
 	yolo_model_processor = std::make_unique<YoloModelProcessor>(model_path);
-}
-
-// 执行模型并将结果存于shapes
-void Workspace::runYoloOnImage() {
-	if (yolo_model_processor) {
-		shapes = yolo_model_processor->detectShapes(image->getImageMat());
-	}
 }
 
 

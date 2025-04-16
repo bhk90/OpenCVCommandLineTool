@@ -5,7 +5,7 @@
 ///      提供点的管理、标签操作、RLE掩码、历史记录等功能；
 ///      是标注系统中最核心的基础数据结构之一。
 /// 
-/// TODO: bounding_rect的初始化、更新
+///
 /// 
 /// ----------------------- MyShape类 -----------------------
 
@@ -23,10 +23,7 @@ private:
     std::string label;                    // 标签名 (ex. G-, B+, ...)
     int shape_type;                       // 形状类别 (0: rectangle, 1: polygon, 2: mask)
     std::vector<Point> points;            // 形状所有点
-    std::vector<int> rle_counts;          // 保存 RLE 格式的掩码，用于读写 JSON（如 COCO 格式）
-
-    cv::Rect bounding_rect;               // 由 points 推导出的最小包围矩形
-    cv::Mat mask;                        // 实际用于图像处理与显示的掩码图像（CV_8UC1，0=背景，255=前景）
+    
     std::vector<std::vector<Point>> history; // 点的历史记录
 
 public:
@@ -36,18 +33,11 @@ public:
     const std::vector<Point>& getPoints() const;
     const std::string& getLabel() const;
     int getShapeType() const;
-    const cv::Rect& getBoundingRect() const;
-    const std::vector<int>& getRLE() const;
-    bool hasRLE() const;
-    const cv::Mat& getMask() const;
 
     // Set 方法
     void setPoints(const std::vector<Point>& points);
     void setLabel(const std::string& label);
     void setShapeType(int type);
-    void setBoundingRect(const cv::Rect& rect);
-    void setRLE(const std::vector<int>& counts);
-    void setMask(const cv::Mat& mask);
 
     // 点操作
     void addPoint(double x, double y);
@@ -55,11 +45,6 @@ public:
     // 历史记录功能
     void saveHistory();
     void undoLastChange();
-
-    // RLE 掩码
-    std::vector<int> run_length_encode(const cv::Mat& binary_mask);
-    cv::Mat rle_decode_to_mask(const std::vector<int>& rle); // 通过掩码转换为 cv::Mat mask
-    void clearRLE();
 };
 
 #endif // SHAPE_H

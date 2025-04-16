@@ -88,9 +88,6 @@ public:
 	// 初始化YoloModelProcessor
 	void initYoloModelProcessor(const std::string& model_path);
 
-	// 执行模型并将结果存于shapes
-	void runYoloOnImage();
-
 
 
 	/// ----------------------- get/set -----------------------
