@@ -120,27 +120,6 @@ bool Workspace::loadFromAnnotationFile() {
 		}
 
 		addShape(label, points, shape_type);
-
-		// 如果有 mask 字段，读取 RLE
-		if (shapeJson.contains("mask")) {
-			auto maskJson = shapeJson["mask"];
-			if (maskJson.contains("format") && maskJson["format"] == "rle") {
-				std::vector<int> counts = maskJson["counts"].get<std::vector<int>>();
-				shapes.back().setRLE(counts); // 设置 RLE 到刚添加的 shape
-			}
-
-			// 如果有 bounding_rect 字段，读取并设置
-			if (maskJson.contains("bounding_rect")) {
-				auto boundingRectJson = maskJson["bounding_rect"];
-				if (boundingRectJson.size() == 4) {
-					int x = boundingRectJson[0];
-					int y = boundingRectJson[1];
-					int width = boundingRectJson[2];
-					int height = boundingRectJson[3];
-					shapes.back().setBoundingRect(cv::Rect(x, y, width, height));  // 设置 bounding rect
-				}
-			}
-		}
 	}
 
 	return true;
@@ -174,20 +153,20 @@ bool Workspace::saveToAnnotationFile() const {
 			shapeJson["points"].push_back({ {"x", point.x}, {"y", point.y} });
 		}
 
-		// 添加 RLE 掩码支持
-		if (shape.hasRLE()) {
-			json maskJson;
-			maskJson["format"] = "rle";
+		// 获取 SegmentOutput 并存储到 JSON
+		const SegmentOutput& segmentOutput = shape.getSegmentOutput();
+		shapeJson["segment_output"] = {
+			{"id", segmentOutput._id},
+			{"confidence", segmentOutput._confidence},
+			{"box", {
+				{"x", segmentOutput._box.x},
+				{"y", segmentOutput._box.y},
+				{"width", segmentOutput._box.width},
+				{"height", segmentOutput._box.height}
+			}}
+		};
 
-			// 获取 bounding rect 并存储
-			const cv::Rect& boundingRect = shape.getBoundingRect();
-			maskJson["bounding_rect"] = { boundingRect.x, boundingRect.y, boundingRect.width, boundingRect.height };
-
-			// 设置 RLE counts
-			maskJson["counts"] = shape.getRLE();
-			shapeJson["mask"] = maskJson;
-		}
-
+		// 将 shapeJson 添加到 shapes 数组中
 		j["shapes"].push_back(shapeJson);
 	}
 
@@ -195,20 +174,20 @@ bool Workspace::saveToAnnotationFile() const {
 	if (!file) {
 		return false;
 	}
-	file << j.dump(-1);
+	file << j.dump(4);
 	return true;
 }
 
 
 
 /// ----------------------- Yolo模型相关 -----------------------
-// 初始化YoloModelProcessor
+// 运行YoloModelProcessor
 void Workspace::runYoloModelProcessor(const std::string& model_path) {
 	yolo_model_processor = std::make_unique<YoloModelProcessor>(model_path);
 	yolo_model_processor->infer(image->getImageMat());
-	
-	shapes = yolo_model_processor->getShapes();
-	mask_image = yolo_model_processor->getDrawResult();
+
+	importShapes(yolo_model_processor->getShapes());
+	setBinaryMask(yolo_model_processor->getBinaryMask());
 }
 
 

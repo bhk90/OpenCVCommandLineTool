@@ -31,11 +31,8 @@ public:
     // 对图像执行推理，返回转换为 MyShape 的结果列表
     void infer(cv::Mat& image);
 
-    // 返回对 shapes 的引用
-    std::vector<MyShape>& getShapes();
-
-    // 返回绘制结果图像（cv::Mat）
-    cv::Mat& getDrawResult();
+    std::vector<MyShape> getShapes() const;
+    cv::Mat getBinaryMask() const;
 };
 
 #endif // YOLOMODEL_PROCESSOR_H

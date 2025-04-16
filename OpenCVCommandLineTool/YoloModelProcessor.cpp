@@ -5,15 +5,30 @@ YoloModelProcessor::YoloModelProcessor(const std::string& model_path) {
 }
 
 void YoloModelProcessor::infer(cv::Mat& image) {
-    inference_result = yolo_model->infer(image);
+    if (yolo_model) {
+        yolo_model->infer(image);
+    }
+
 }
 
-// 返回对 shapes 的引用
-std::vector<MyShape>& YoloModelProcessor::getShapes() {
-    return inference_result.shapes;
+// 获取检测到的形状
+std::vector<MyShape> YoloModelProcessor::getShapes() const {
+    if (yolo_model) {
+        const YoloInferenceResult* result = yolo_model->getInferenceResult();
+        if (result) {
+            return result->shapes;
+        }
+    }
+    return {};
 }
 
-// 返回绘制结果图像（cv::Mat）
-cv::Mat& YoloModelProcessor::getDrawResult() {
-    return inference_result.draw_result;
+// 获取二进制掩码
+cv::Mat YoloModelProcessor::getBinaryMask() const {
+    if (yolo_model) {
+        const YoloInferenceResult* result = yolo_model->getInferenceResult();
+        if (result) {
+            return result->binary_mask;
+        }
+    }
+    return cv::Mat();
 }

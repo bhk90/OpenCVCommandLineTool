@@ -50,6 +50,8 @@ private:
 	std::unique_ptr<YoloModelProcessor> yolo_model_processor;
 	cv::Mat mask_image; // 带有掩码和边界框的图像，通过runYoloModelProcessor生成
 
+	cv::Mat binary_mask;
+
 public:
 	Workspace(std::unique_ptr<MyImage> img);
 
@@ -87,8 +89,9 @@ public:
 
 
 	/// ----------------------- Yolo模型相关 -----------------------
-	// 初始化YoloModelProcessor
+	// 运行YoloModelProcessor
 	void runYoloModelProcessor(const std::string& model_path);
+
 
 
 	/// ----------------------- get/set -----------------------
@@ -103,8 +106,16 @@ public:
 
 	// 获取所有标注
 	const std::vector<MyShape>& getShapes() const;
+	
+	// 获取 binary_mask 的方法
+	const cv::Mat& getBinaryMask() const {
+		return binary_mask;
+	}
 
-	const cv::Mat& getMaskImage() const;
+	// 设置 binary_mask 的方法
+	void setBinaryMask(const cv::Mat& mask) {
+		binary_mask = mask;
+	}
 };
 
 #endif // WORKSPACE_H

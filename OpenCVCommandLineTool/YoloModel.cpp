@@ -7,10 +7,8 @@ YoloModel::YoloModel(const std::string& model_path)
     model.eval();
 }
 
-
-
-YoloInferenceResult YoloModel::infer(cv::Mat& image) {
-    // 1. 预处理图像
+void YoloModel::infer(cv::Mat& image) {
+    //cv::Mat image = cv::imread(image_path);
     cv::Mat resize_image;
     std::vector<float> pad_info = Letterbox(image, resize_image, cv::Size(640, 640));
 
@@ -113,27 +111,26 @@ std::vector<MyShape> YoloModel::createShapes(const std::vector<int>& nms_indexes
         m = m.reshape(1, 160);
         cv::resize(m(mask_boxes[index]) > 0.5f, segmentOutput._boxMask, segmentOutput._box.size());
 
-        segmentOutputs.push_back(segmentOutput);
-
         std::string label = std::to_string(class_ids[index]);
-        MyShape shape(label, 2);
-
         const cv::Rect& b = segmentOutput._box;
+
+        MyShape shape(label, 2);
         shape.addPoint(b.x, b.y);
         shape.addPoint(b.x + b.width, b.y + b.height);
-
-        cv::Mat binary_mask;
-        segmentOutput._boxMask.convertTo(binary_mask, CV_8U);
-        std::vector<int> rle = shape.run_length_encode(binary_mask);
-
-        shape.setBoundingRect(b);
-        shape.setMask(binary_mask);
-        shape.setRLE(rle);
-
+        shape.setSegmentOutput(segmentOutput);
         shapes.push_back(shape);
+
+        segmentOutputs.push_back(segmentOutput);
     }
 
-    return shapes;
+    cv::Mat binary_mask;
+    draw_result(resize_image, segmentOutputs, binary_mask);
+    /*cv::imshow("mask", binary_mask);
+    cv::waitKey(0);
+    cv::destroyAllWindows();*/
+
+    // 初始化 unique_ptr， 传入右值
+    inference_result = std::make_unique<YoloInferenceResult>(std::move(shapes), std::move(binary_mask));
 }
 
 std::vector<float> YoloModel::Letterbox(const cv::Mat& src, cv::Mat& dst, const cv::Size& out_size) {
@@ -171,21 +168,15 @@ cv::Rect YoloModel::toBox(const cv::Mat& input, const cv::Rect& range) {
     return box & range;
 }
 
-cv::Mat YoloModel::draw_result(const cv::Mat& image, const std::vector<SegmentOutput>& results) {
-    cv::Mat result_image = image.clone();
-    cv::Mat mask = image.clone();
+void YoloModel::draw_result(cv::Mat& image, std::vector<SegmentOutput>& results, cv::Mat& mask) {
+    mask = cv::Mat::zeros(image.size(), CV_8UC1); // 创建一个黑色遮罩
 
     for (const SegmentOutput& result : results) {
-        // 绘制边界框
-        cv::rectangle(result_image, result._box, cv::Scalar(0, 255, 0), 2, 8);
-
-        // 在mask上应用每个mask
-        mask(result._box).setTo(cv::Scalar(0, 0, 255), result._boxMask);
+        mask(result._box).setTo(255, result._boxMask); // 在遮罩区域内设置为白色
     }
-
-    // 加权合成原图和mask
-    cv::Mat final_result;
-    cv::addWeighted(result_image, 0.5, mask, 0.8, 1, final_result);
-    return final_result;
 }
 
+// 提供访问 inference_result 的方法
+const YoloInferenceResult* YoloModel::getInferenceResult() const {
+    return inference_result.get();
+}
