@@ -12,64 +12,27 @@ void YoloModel::infer(cv::Mat& image) {
     cv::Mat resize_image;
     std::vector<float> pad_info = Letterbox(image, resize_image, cv::Size(640, 640));
 
-    torch::Tensor image_tensor = preprocessImage(resize_image);
+    torch::Tensor image_tensor = torch::from_blob(resize_image.data, { resize_image.rows, resize_image.cols, 3 }, torch::kByte).to(torch::kCPU);
+    image_tensor = image_tensor.toType(torch::kFloat32).div(255);
+    image_tensor = image_tensor.permute({ 2, 0, 1 }).unsqueeze(0);
 
-    // 2. 推理
-    auto [main_output, mask_output] = runInference(image_tensor);
+    std::vector<torch::jit::IValue> inputs{ image_tensor };
+    auto net_outputs = model.forward(inputs).toTuple();
 
-    // 3. 结果处理
+    at::Tensor main_output = net_outputs->elements()[0].toTensor().to(torch::kCPU);
+    at::Tensor mask_output = net_outputs->elements()[1].toTensor().to(torch::kCPU);
+
+    cv::Mat detect_buffer(main_output.sizes()[1], main_output.sizes()[2], CV_32F, (float*)main_output.data_ptr());
+    detect_buffer = detect_buffer.t();
+
+    cv::Mat segment_buffer(32, 25600, CV_32F);
+    std::memcpy(segment_buffer.data, mask_output.data_ptr(), sizeof(float) * 32 * 160 * 160);
+
     std::vector<cv::Rect> mask_boxes;
     std::vector<cv::Rect> boxes;
     std::vector<int> class_ids;
     std::vector<float> confidences;
     std::vector<cv::Mat> masks;
-    cv::Mat segment_buffer(32, 25600, CV_32F);
-
-    processDetections(image, main_output, mask_output, mask_boxes, boxes, class_ids, confidences, masks, segment_buffer);
-
-    std::vector<int> nms_indexes;
-    cv::dnn::NMSBoxes(boxes, confidences, conf_threshold, nms_threshold, nms_indexes);
-
-    // 4. 创建 shapes 和 segmentOutputs
-    std::vector<SegmentOutput> segmentOutputs;
-    std::vector<MyShape> shapes = createShapes(nms_indexes, mask_boxes, boxes, class_ids, confidences, masks, segment_buffer, segmentOutputs);
-
-    // 5. 绘制结果
-    cv::Mat final_result = draw_result(resize_image, segmentOutputs);
-
-    // 6. 返回包含 shapes 和绘制结果的结构体
-    YoloInferenceResult result;
-    result.shapes = shapes;
-    result.draw_result = final_result;
-
-    return result;
-}
-
-// 预处理图像
-torch::Tensor YoloModel::preprocessImage(const cv::Mat& resize_image) {
-    torch::Tensor image_tensor = torch::from_blob(resize_image.data, { resize_image.rows, resize_image.cols, 3 }, torch::kByte).to(torch::kCPU);
-    image_tensor = image_tensor.toType(torch::kFloat32).div(255);
-    image_tensor = image_tensor.permute({ 2, 0, 1 }).unsqueeze(0);
-    return image_tensor;
-}
-
-// 推理
-std::tuple<at::Tensor, at::Tensor> YoloModel::runInference(const torch::Tensor& image_tensor) {
-    std::vector<torch::jit::IValue> inputs{ image_tensor };
-    auto net_outputs = model.forward(inputs).toTuple();
-    at::Tensor main_output = net_outputs->elements()[0].toTensor().to(torch::kCPU);
-    at::Tensor mask_output = net_outputs->elements()[1].toTensor().to(torch::kCPU);
-    return { main_output, mask_output };
-}
-
-// 处理检测结果
-void YoloModel::processDetections(cv::Mat& image, const at::Tensor& main_output, const at::Tensor& mask_output,
-    std::vector<cv::Rect>& mask_boxes, std::vector<cv::Rect>& boxes, std::vector<int>& class_ids,
-    std::vector<float>& confidences, std::vector<cv::Mat>& masks, cv::Mat& segment_buffer) {
-    cv::Mat detect_buffer(main_output.sizes()[1], main_output.sizes()[2], CV_32F, (float*)main_output.data_ptr());
-    detect_buffer = detect_buffer.t();
-    
-    std::memcpy(segment_buffer.data, mask_output.data_ptr(), sizeof(float) * 32 * 160 * 160);
 
     for (int i = 0; i < detect_buffer.rows; ++i) {
         const cv::Mat result = detect_buffer.row(i);
@@ -91,12 +54,11 @@ void YoloModel::processDetections(cv::Mat& image, const at::Tensor& main_output,
             masks.push_back(result.colRange(main_output.sizes()[1] - 32, main_output.sizes()[1]));
         }
     }
-}
 
-// 创建 shapes，并增加对 segmentOutputs 的处理
-std::vector<MyShape> YoloModel::createShapes(const std::vector<int>& nms_indexes, const std::vector<cv::Rect>& mask_boxes, const std::vector<cv::Rect>& boxes,
-    const std::vector<int>& class_ids, const std::vector<float>& confidences,
-    const std::vector<cv::Mat>& masks, cv::Mat& segment_buffer, std::vector<SegmentOutput>& segmentOutputs) {
+    std::vector<int> nms_indexes;
+    cv::dnn::NMSBoxes(boxes, confidences, conf_threshold, nms_threshold, nms_indexes);
+
+    std::vector<SegmentOutput> segmentOutputs;
     std::vector<MyShape> shapes;
 
     for (const int index : nms_indexes) {

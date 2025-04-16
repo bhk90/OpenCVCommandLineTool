@@ -33,7 +33,6 @@
 
 #include <vector>
 #include <string>
-#include <opencv2/opencv.hpp>
 #include "MyShape.h"
 #include "MyImage.h"
 #include "YoloModelProcessor.h"
@@ -48,7 +47,6 @@ private:
 	const std::string annotation_path;
 	
 	std::unique_ptr<YoloModelProcessor> yolo_model_processor;
-	cv::Mat mask_image; // 带有掩码和边界框的图像，通过runYoloModelProcessor生成
 
 	cv::Mat binary_mask;
 

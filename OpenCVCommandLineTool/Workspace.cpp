@@ -216,7 +216,3 @@ int Workspace::getImageHeight() const {
 const std::vector<MyShape>& Workspace::getShapes() const {
 	return shapes;
 }
-
-const cv::Mat& Workspace::getMaskImage() const {
-	return mask_image;
-}

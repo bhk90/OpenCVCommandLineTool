@@ -19,7 +19,6 @@
 class YoloModelProcessor {
 private:
     std::unique_ptr<YoloModel> yolo_model;
-    YoloInferenceResult inference_result;
 
 public:
     /// ----------------------- 构造与推理 -----------------------
