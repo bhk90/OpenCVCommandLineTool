@@ -52,7 +52,7 @@ private:
 	cv::Mat binary_mask;
 
 public:
-	Workspace(std::unique_ptr<MyImage> img);
+	Workspace::Workspace(const std::string& image_path);
 
 	/// ----------------------- 获取 MyImage 引用 -----------------------
 	// 获取 MyImage 的引用
@@ -86,8 +86,13 @@ public:
 	// 保存标注文件
 	bool saveToAnnotationFile() const;
 
-	/// ----------------------- 生成PNG掩码图像 -----------------------
+	/// ----------------------- PNG掩码图像的读写 -----------------------
+	// 保存掩码图像为PNG
 	void saveBinaryMaskAsPng();
+
+	// 读取PNG掩码图像，放入binary_mask
+	bool loadFromMaskFile();
+
 
 	/// ----------------------- Yolo模型相关 -----------------------
 	// 运行YoloModelProcessor
@@ -111,14 +116,10 @@ public:
 	const std::vector<MyShape>& getShapes() const;
 	
 	// 获取 binary_mask 的方法
-	const cv::Mat& getBinaryMask() const {
-		return binary_mask;
-	}
+	const cv::Mat& getBinaryMask() const;
 
 	// 设置 binary_mask 的方法
-	void setBinaryMask(const cv::Mat& mask) {
-		binary_mask = mask;
-	}
+	void setBinaryMask(const cv::Mat& mask);
 };
 
 #endif // WORKSPACE_H

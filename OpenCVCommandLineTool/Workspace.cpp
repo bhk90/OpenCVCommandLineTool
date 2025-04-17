@@ -35,14 +35,15 @@ using json = nlohmann::json;
 namespace fs = std::filesystem;
 
 /// ----------------------- 构造函数 -----------------------
-Workspace::Workspace(std::unique_ptr<MyImage> img)
-	: image(std::move(img)),
-	image_path(image->getImagePath()),
+Workspace::Workspace(const std::string& image_path)
+	: image(std::make_unique<MyImage>(image_path)),
+	image_path(image_path),
 	annotation_path((fs::path(image_path).parent_path() /
 		(fs::path(image_path).stem().string() + ".json")).string()),
 	mask_path((fs::path(image_path).parent_path() /
 		(fs::path(image_path).stem().string() + "_mask.png")).string()) {
 	loadFromAnnotationFile();
+	loadFromMaskFile();
 }
 
 
@@ -128,11 +129,6 @@ bool Workspace::loadFromAnnotationFile() {
 	return true;
 }
 
-//生成PNG掩码图片
-void Workspace::saveBinaryMaskAsPng() {
-	cv::imwrite(mask_path, binary_mask);
-};
-
 // 新建标注文件
 void Workspace::createAnnotationFile() {
 	if (!fs::exists(annotation_path)) {
@@ -187,6 +183,29 @@ bool Workspace::saveToAnnotationFile() const {
 }
 
 
+/// ----------------------- PNG掩码图像的读写 -----------------------
+// 保存掩码图像为PNG
+void Workspace::saveBinaryMaskAsPng() {
+	cv::imwrite(mask_path, binary_mask);
+}
+
+// 读取PNG掩码图像，放入binary_mask
+bool Workspace::loadFromMaskFile() {
+	if (!fs::exists(mask_path)) {
+		return false; // PNG文件不存在，返回 false 
+	}
+
+	cv::Mat mask = cv::imread(mask_path, cv::IMREAD_GRAYSCALE); // 以灰度图方式读取
+	if (mask.empty()) {
+		return false; // 读取失败
+	}
+
+	// 转成二值图：像素值为0或255
+	cv::threshold(mask, binary_mask, 127, 255, cv::THRESH_BINARY);
+
+	return true;
+}
+
 
 /// ----------------------- Yolo模型相关 -----------------------
 // 运行YoloModelProcessor
@@ -228,4 +247,9 @@ int Workspace::getImageHeight() const {
 // 获取所有标注
 const std::vector<MyShape>& Workspace::getShapes() const {
 	return shapes;
+}
+
+// 获取 binary_mask 的方法
+const cv::Mat& Workspace::getBinaryMask() const {
+	return binary_mask;
 }
