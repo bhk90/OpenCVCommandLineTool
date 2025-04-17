@@ -136,7 +136,7 @@ void CommandHandler::commandLoad(const std::vector<std::string>& args) {
 	}
 
 	try {
-		workspace = std::make_unique<Workspace>(std::make_unique<MyImage>(path));
+		workspace = std::make_unique<Workspace>(path);
 		std::cout << "Image loaded successfully: " << path << std::endl;
 	}
 	catch (const std::exception& e) {

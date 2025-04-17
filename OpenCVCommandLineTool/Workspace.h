@@ -46,6 +46,9 @@ private:
 	const std::string image_path;
 	const std::string annotation_path;
 	const std::string mask_path;
+
+	bool hasAnnotationFile = false;
+	bool hasMaskFile = false;
 	
 	std::unique_ptr<YoloModelProcessor> yolo_model_processor;
 
@@ -117,9 +120,6 @@ public:
 	
 	// 获取 binary_mask 的方法
 	const cv::Mat& getBinaryMask() const;
-
-	// 设置 binary_mask 的方法
-	void setBinaryMask(const cv::Mat& mask);
 };
 
 #endif // WORKSPACE_H

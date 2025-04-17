@@ -101,6 +101,8 @@ bool Workspace::loadFromAnnotationFile() {
 		return false; // 标注文件不存在，返回 false
 	}
 
+	hasAnnotationFile = true;
+
 	std::ifstream file(annotation_path);
 	if (!file) {
 		return false;
@@ -195,6 +197,8 @@ bool Workspace::loadFromMaskFile() {
 		return false; // PNG文件不存在，返回 false 
 	}
 
+	hasMaskFile = true;
+
 	cv::Mat mask = cv::imread(mask_path, cv::IMREAD_GRAYSCALE); // 以灰度图方式读取
 	if (mask.empty()) {
 		return false; // 读取失败
@@ -214,7 +218,7 @@ void Workspace::runYoloModelProcessor(const std::string& model_path) {
 	yolo_model_processor->infer(image->getImageMat());
 
 	importShapes(yolo_model_processor->getShapes());
-	setBinaryMask(yolo_model_processor->getBinaryMask());
+	binary_mask = yolo_model_processor->getBinaryMask();
 }
 
 
