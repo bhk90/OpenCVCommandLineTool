@@ -31,7 +31,7 @@ public:
     void infer(cv::Mat& image);
 
     std::vector<MyShape> getShapes() const;
-    cv::Mat getBinaryMask() const;
+    cv::Mat& getBinaryMask() const;
 };
 
 #endif // YOLOMODEL_PROCESSOR_H
