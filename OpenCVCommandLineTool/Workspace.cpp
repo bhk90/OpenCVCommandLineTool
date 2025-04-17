@@ -7,7 +7,7 @@
 /// 
 ///			// 通过图像路径创建一个 MyImage 的 unique_ptr 对象，放入 workspace 中
 ///			std::unique_ptr<Workspace> workspace; 
-///			workspace = std::make_unique<Workspace>(std::make_unique<MyImage>("image.jpg"));
+///			workspace = std::make_unique<Workspace>("image.jpg");
 /// 
 ///		
 ///		 二、Workspace的功能：
