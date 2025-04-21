@@ -50,7 +50,8 @@ private:
 	bool hasAnnotationFile = false;
 	bool hasMaskFile = false;
 	
-	std::unique_ptr<YoloModelProcessor> yolo_model_processor;
+	//std::unique_ptr<YoloModelProcessor> yolo_model_processor;
+	std::shared_ptr<YoloModelProcessor> yolo_model_processor; // 外部注入
 
 	cv::Mat binary_mask;
 
@@ -99,7 +100,7 @@ public:
 
 	/// ----------------------- Yolo模型相关 -----------------------
 	// 运行YoloModelProcessor
-	void runYoloModelProcessor(const std::string& model_path);
+	void runYoloModelProcessor(std::shared_ptr<YoloModelProcessor> processor);
 
 
 
@@ -120,6 +121,8 @@ public:
 	
 	// 获取 binary_mask 的方法
 	const cv::Mat& getBinaryMask() const;
+
+	void setYoloModelProcessor(std::shared_ptr<YoloModelProcessor> processor);
 };
 
 #endif // WORKSPACE_H

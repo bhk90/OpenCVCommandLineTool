@@ -22,6 +22,9 @@ void CommandHandler::handleCommand(const std::string& command, const std::vector
 	else if (command == "unload") {
 		commandUnload();
 	}
+	else if (command == "batch") {
+		commandBatchModelProcessing(args);
+	}
 	else if (!workspace) {
 		std::cout << "Error: No image loaded. Use 'load <image_path>' first.\n";
 	}
@@ -82,6 +85,7 @@ void CommandHandler::commandHelp() const {
 		<< "  export                        - Export the image as binary stream\n"
 		<< "  show                          - Show image (For testing purpose)"
 		<< "  model <path/to/model>         - Use model to generate a JSON annotation file\n"
+		<< "  batch <path/to/model>         - Use model to batch generate...\n"
 		<< "  label list					- list all labels\n"
 		<< "  label add SEC 0 x0 y0 x1 y1   - add an SEC rectangle label\n"
 		<< "  crop <x> <y> <width> <height> - Crop the image\n"
@@ -251,7 +255,26 @@ void CommandHandler::commandModelProcessing(const std::vector<std::string>& args
 		return;
 	}
 	if (args.size() == 1) {
-		workspace->runYoloModelProcessor(args[0]);
+		yolo_processor = std::make_shared<YoloModelProcessor>(args[0]);
+		workspace->runYoloModelProcessor(yolo_processor);
+		workspace->saveToAnnotationFile();
+		workspace->saveBinaryMaskAsPng();
+	}
+}
+
+void CommandHandler::commandBatchModelProcessing(const std::vector<std::string>& args) {
+	yolo_processor = std::make_shared<YoloModelProcessor>(args[0]);
+	std::vector<std::string> imagePaths = { 
+	    "D:/wh/new-coding/testdata/cropped/6.jpg",
+	    "D:/wh/new-coding/testdata/cropped/7.jpg",
+	    "D:/wh/new-coding/testdata/cropped/8.jpg",
+	    "D:/wh/new-coding/testdata/cropped/9.jpg"
+		// ......
+	};
+
+	for (const auto& path : imagePaths) {
+		workspace = std::make_unique<Workspace>(path);
+		workspace->runYoloModelProcessor(yolo_processor);
 		workspace->saveToAnnotationFile();
 		workspace->saveBinaryMaskAsPng();
 	}

@@ -12,6 +12,7 @@
 class CommandHandler {
 private:
 	std::unique_ptr<Workspace> workspace;
+	std::shared_ptr<YoloModelProcessor> yolo_processor;
 
 public:
 	CommandHandler() = default;
@@ -39,6 +40,7 @@ public:
 
 	void commandLabel(const std::vector<std::string>& args);
 	void commandModelProcessing(const std::vector<std::string>& args);
+	void commandBatchModelProcessing(const std::vector<std::string>& args);
 };
 
 #endif // COMMAND_HANDLER_H

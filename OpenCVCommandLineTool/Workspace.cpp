@@ -213,8 +213,9 @@ bool Workspace::loadFromMaskFile() {
 
 /// ----------------------- Yolo模型相关 -----------------------
 // 运行YoloModelProcessor
-void Workspace::runYoloModelProcessor(const std::string& model_path) {
-	yolo_model_processor = std::make_unique<YoloModelProcessor>(model_path);
+void Workspace::runYoloModelProcessor(std::shared_ptr<YoloModelProcessor> processor) {
+	setYoloModelProcessor(processor);
+	
 	yolo_model_processor->infer(image->getImageMat());
 
 	importShapes(yolo_model_processor->getShapes());
@@ -256,4 +257,8 @@ const std::vector<MyShape>& Workspace::getShapes() const {
 // 获取 binary_mask 的方法
 const cv::Mat& Workspace::getBinaryMask() const {
 	return binary_mask;
+}
+
+void Workspace::setYoloModelProcessor(std::shared_ptr<YoloModelProcessor> processor) {
+	yolo_model_processor = processor;
 }

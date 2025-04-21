@@ -23,7 +23,7 @@ std::vector<MyShape> YoloModelProcessor::getShapes() const {
 }
 
 // 获取二进制掩码
-cv::Mat& YoloModelProcessor::getBinaryMask() const {
+const cv::Mat& YoloModelProcessor::getBinaryMask() const {
     if (yolo_model) {
         const YoloInferenceResult* result = yolo_model->getInferenceResult();
         if (result) {
