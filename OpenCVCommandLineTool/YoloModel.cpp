@@ -10,7 +10,9 @@ YoloModel::YoloModel(const std::string& model_path)
 void YoloModel::infer(cv::Mat& image) {
     //cv::Mat image = cv::imread(image_path);
     cv::Mat resize_image;
-    std::vector<float> pad_info = Letterbox(image, resize_image, cv::Size(640, 640));
+    std::vector<float> pad_info = Letterbox(image, resize_image, cv::Size(640, 480));
+
+    cv::cvtColor(resize_image, resize_image, cv::COLOR_BGR2RGB);
 
     torch::Tensor image_tensor = torch::from_blob(resize_image.data, { resize_image.rows, resize_image.cols, 3 }, torch::kByte).to(device);
     image_tensor = image_tensor.toType(torch::kFloat32).div(255);
@@ -25,8 +27,8 @@ void YoloModel::infer(cv::Mat& image) {
     cv::Mat detect_buffer(main_output.sizes()[1], main_output.sizes()[2], CV_32F, (float*)main_output.data_ptr());
     detect_buffer = detect_buffer.t();
 
-    cv::Mat segment_buffer(32, 25600, CV_32F);
-    std::memcpy(segment_buffer.data, mask_output.data_ptr(), sizeof(float) * 32 * 160 * 160);
+    cv::Mat segment_buffer(32, 19200, CV_32F);
+    std::memcpy(segment_buffer.data, mask_output.data_ptr(), sizeof(float) * 32 * 120 * 160);
 
     std::vector<cv::Rect> mask_boxes;
     std::vector<cv::Rect> boxes;
@@ -47,7 +49,7 @@ void YoloModel::infer(cv::Mat& image) {
 
             const float mask_scale = 0.25f;
             const cv::Mat detection_box = result.colRange(0, 4);
-            const cv::Rect mask_box = toBox(detection_box * mask_scale, cv::Rect(0, 0, 160, 160));
+            const cv::Rect mask_box = toBox(detection_box * mask_scale, cv::Rect(0, 0, 160, 120));
             const cv::Rect image_box = toBox(detection_box, cv::Rect(0, 0, image.cols, image.rows));
             mask_boxes.push_back(mask_box);
             boxes.push_back(image_box);
@@ -70,7 +72,7 @@ void YoloModel::infer(cv::Mat& image) {
         cv::Mat m;
         cv::exp(-masks[index] * segment_buffer, m);
         m = 1.0f / (1.0f + m);
-        m = m.reshape(1, 160);
+        m = m.reshape(1, 120);
         cv::resize(m(mask_boxes[index]) > 0.5f, segmentOutput._boxMask, segmentOutput._box.size());
 
         std::string label = std::to_string(class_ids[index]);
@@ -87,9 +89,6 @@ void YoloModel::infer(cv::Mat& image) {
 
     cv::Mat binary_mask;
     draw_result(resize_image, segmentOutputs, binary_mask);
-    /*cv::imshow("mask", binary_mask);
-    cv::waitKey(0);
-    cv::destroyAllWindows();*/
 
     // 初始化 unique_ptr， 传入右值
     inference_result = std::make_unique<YoloInferenceResult>(std::move(shapes), std::move(binary_mask));

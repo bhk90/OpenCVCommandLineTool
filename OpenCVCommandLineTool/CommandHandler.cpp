@@ -265,10 +265,10 @@ void CommandHandler::commandModelProcessing(const std::vector<std::string>& args
 void CommandHandler::commandBatchModelProcessing(const std::vector<std::string>& args) {
 	yolo_processor = std::make_shared<YoloModelProcessor>(args[0]);
 	std::vector<std::string> imagePaths = { 
-	    "D:/wh/new-coding/testdata/cropped/6.jpg",
-	    "D:/wh/new-coding/testdata/cropped/7.jpg",
-	    "D:/wh/new-coding/testdata/cropped/8.jpg",
-	    "D:/wh/new-coding/testdata/cropped/9.jpg"
+	    "D:/wh/new-coding/testdata/data/images/6.jpg",
+	    "D:/wh/new-coding/testdata/data/images/7.jpg",
+	    "D:/wh/new-coding/testdata/data/images/8.jpg",
+	    "D:/wh/new-coding/testdata/data/images/9.jpg"
 		// ......
 	};
 
