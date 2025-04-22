@@ -45,6 +45,7 @@ private:
     torch::jit::script::Module model;
     float conf_threshold;
     float nms_threshold;
+    torch::Device device;
 
     std::unique_ptr<YoloInferenceResult> inference_result = nullptr;
 

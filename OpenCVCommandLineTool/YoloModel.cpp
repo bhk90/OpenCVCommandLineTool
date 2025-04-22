@@ -1,9 +1,9 @@
 ﻿#include "YoloModel.h"
 
 YoloModel::YoloModel(const std::string& model_path)
-    : conf_threshold(0.1f), nms_threshold(0.1f) {
+    : conf_threshold(0.25f), nms_threshold(0.7f), device(torch::kCPU) {
     model = torch::jit::load(model_path);
-    model.to(torch::kCPU);
+    model.to(device);
     model.eval();
 }
 
@@ -12,7 +12,7 @@ void YoloModel::infer(cv::Mat& image) {
     cv::Mat resize_image;
     std::vector<float> pad_info = Letterbox(image, resize_image, cv::Size(640, 640));
 
-    torch::Tensor image_tensor = torch::from_blob(resize_image.data, { resize_image.rows, resize_image.cols, 3 }, torch::kByte).to(torch::kCPU);
+    torch::Tensor image_tensor = torch::from_blob(resize_image.data, { resize_image.rows, resize_image.cols, 3 }, torch::kByte).to(device);
     image_tensor = image_tensor.toType(torch::kFloat32).div(255);
     image_tensor = image_tensor.permute({ 2, 0, 1 }).unsqueeze(0);
 
