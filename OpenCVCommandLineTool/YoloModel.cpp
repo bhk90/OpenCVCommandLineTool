@@ -130,12 +130,25 @@ cv::Rect YoloModel::toBox(const cv::Mat& input, const cv::Rect& range) {
 }
 
 void YoloModel::draw_result(cv::Mat& image, std::vector<SegmentOutput>& results, cv::Mat& mask) {
-    mask = cv::Mat::zeros(image.size(), CV_8UC1); // 创建一个黑色遮罩
+    mask = cv::Mat::zeros(image.size(), CV_8UC1); // 初始化为黑色
 
     for (const SegmentOutput& result : results) {
-        mask(result._box).setTo(255, result._boxMask); // 在遮罩区域内设置为白色
+        cv::Rect box = cv::Rect(result._box) & cv::Rect(0, 0, mask.cols, mask.rows);
+        if (box.width > 0 && box.height > 0) {
+            cv::Mat resizedMask;
+            if (result._boxMask.size() != box.size()) {
+                cv::resize(result._boxMask, resizedMask, box.size(), 0, 0, cv::INTER_NEAREST);
+            }
+            else {
+                resizedMask = result._boxMask;
+            }
+
+            mask(box).setTo(255, resizedMask); // 条件式贴白
+        }
     }
 }
+
+
 
 // 提供访问 inference_result 的方法
 const YoloInferenceResult* YoloModel::getInferenceResult() const {
