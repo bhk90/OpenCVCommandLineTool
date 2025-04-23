@@ -1,7 +1,7 @@
 ﻿#include "YoloModel.h"
 
 YoloModel::YoloModel(const std::string& model_path)
-    : conf_threshold(0.25f), nms_threshold(0.7f), device(torch::kCPU) {
+    : conf_threshold(0.25f), nms_threshold(0.7f), device(torch::kCUDA) {
     model = torch::jit::load(model_path);
     model.to(device);
     model.eval();
