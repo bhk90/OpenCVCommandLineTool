@@ -13,10 +13,39 @@ static const std::array<std::string, 7> class_id_to_label = {
     "CEC", "RBC", "SEC", "TEC", "TNEC", "TLC", "TMC"
 };
 
+struct InputConfig {
+    cv::Size letterbox_size; // e.g. (640, 640) or (640, 480)
+    int segment_cols;        // 25600 or 19200
+    int segment_copy_size;   // 32 * 160 * 160 or 32 * 120 * 160
+    int reshape_cols;        // 160 or 120
+};
+
+InputConfig getInputConfig(bool is_square) {
+    if (is_square) {
+        return {
+            cv::Size(640, 640),
+            25600,
+            32 * 160 * 160,
+            160
+        };
+    }
+    else {
+        return {
+            cv::Size(640, 480),
+            19200,
+            32 * 120 * 160,
+            120
+        };
+    }
+}
+
+
 void YoloModel::infer(cv::Mat& image) {
-    //cv::Mat image = cv::imread(image_path);
+    bool is_input_square = (image.rows == image.cols);
+    InputConfig cfg = getInputConfig(is_input_square);
+
     cv::Mat resize_image;
-    std::vector<float> pad_info = Letterbox(image, resize_image, cv::Size(640, 480));
+    std::vector<float> pad_info = Letterbox(image, resize_image, cfg.letterbox_size);
 
     cv::cvtColor(resize_image, resize_image, cv::COLOR_BGR2RGB);
 
@@ -33,8 +62,8 @@ void YoloModel::infer(cv::Mat& image) {
     cv::Mat detect_buffer(main_output.sizes()[1], main_output.sizes()[2], CV_32F, (float*)main_output.data_ptr());
     detect_buffer = detect_buffer.t();
 
-    cv::Mat segment_buffer(32, 19200, CV_32F);
-    std::memcpy(segment_buffer.data, mask_output.data_ptr(), sizeof(float) * 32 * 120 * 160);
+    cv::Mat segment_buffer(32, cfg.segment_cols, CV_32F);
+    std::memcpy(segment_buffer.data, mask_output.data_ptr(), sizeof(float) * cfg.segment_copy_size);
 
     std::vector<cv::Rect> mask_boxes;
     std::vector<cv::Rect> boxes;
@@ -54,8 +83,8 @@ void YoloModel::infer(cv::Mat& image) {
             confidences.push_back(score);
 
             const float mask_scale = 0.25f;
-            const cv::Mat detection_box = result.colRange(0, 4);
-            const cv::Rect mask_box = toBox(detection_box * mask_scale, cv::Rect(0, 0, 160, 120));
+            const cv::Mat detection_box = result.colRange(0, 4); 
+            const cv::Rect mask_box = toBox(detection_box * mask_scale, cv::Rect(0, 0, 160, cfg.reshape_cols));
             const cv::Rect image_box = toBox(detection_box, cv::Rect(0, 0, image.cols, image.rows));
             mask_boxes.push_back(mask_box);
             boxes.push_back(image_box);
@@ -78,7 +107,7 @@ void YoloModel::infer(cv::Mat& image) {
         cv::Mat m;
         cv::exp(-masks[index] * segment_buffer, m);
         m = 1.0f / (1.0f + m);
-        m = m.reshape(1, 120);
+        m = m.reshape(1, cfg.reshape_cols);
         cv::resize(m(mask_boxes[index]) > 0.5f, segmentOutput._boxMask, segmentOutput._box.size());
 
         std::string label = class_id_to_label.at(class_ids[index]);
