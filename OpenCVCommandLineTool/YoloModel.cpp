@@ -1,4 +1,5 @@
 ﻿#include "YoloModel.h"
+#include <array>
 
 YoloModel::YoloModel(const std::string& model_path)
     : conf_threshold(0.25f), nms_threshold(0.7f), device(torch::kCUDA) {
@@ -6,6 +7,11 @@ YoloModel::YoloModel(const std::string& model_path)
     model.to(device);
     model.eval();
 }
+
+// 建立ID到名称的映射
+static const std::array<std::string, 7> class_id_to_label = {
+    "CEC", "RBC", "SEC", "TEC", "TNEC", "TLC", "TMC"
+};
 
 void YoloModel::infer(cv::Mat& image) {
     //cv::Mat image = cv::imread(image_path);
@@ -75,7 +81,7 @@ void YoloModel::infer(cv::Mat& image) {
         m = m.reshape(1, 120);
         cv::resize(m(mask_boxes[index]) > 0.5f, segmentOutput._boxMask, segmentOutput._box.size());
 
-        std::string label = std::to_string(class_ids[index]);
+        std::string label = class_id_to_label.at(class_ids[index]);
         const cv::Rect& b = segmentOutput._box;
 
         MyShape shape(label, 2);
