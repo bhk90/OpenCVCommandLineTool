@@ -123,6 +123,13 @@ public:
 	const cv::Mat& getBinaryMask() const;
 
 	void setYoloModelProcessor(std::shared_ptr<YoloModelProcessor> processor);
+
+	// 新增的方法声明
+	Point getShapePoint(size_t shapeIndex, size_t pointIndex) const;
+	void setShapePoint(size_t shapeIndex, size_t pointIndex, const Point& point);
+	std::vector<Point> getShapePoints(size_t shapeIndex) const;
+	void setShapePoints(size_t shapeIndex, const std::vector<Point>& points);
+	void addShapePoint(size_t shapeIndex, double x, double y);
 };
 
 #endif // WORKSPACE_H

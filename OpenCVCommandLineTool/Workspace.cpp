@@ -262,3 +262,44 @@ const cv::Mat& Workspace::getBinaryMask() const {
 void Workspace::setYoloModelProcessor(std::shared_ptr<YoloModelProcessor> processor) {
 	yolo_model_processor = processor;
 }
+
+
+// 新增方法的实现
+//通过索引获取一个标注的点
+Point Workspace::getShapePoint(size_t shapeIndex, size_t pointIndex) const {
+	if (shapeIndex < shapes.size() && pointIndex < shapes[shapeIndex].getPoints().size()) {
+		return shapes[shapeIndex].getPoints()[pointIndex];
+	}
+	return Point(0, 0);
+}
+
+// 新增方法：通过索引设置一个标注的点
+void Workspace::setShapePoint(size_t shapeIndex, size_t pointIndex, const Point& point) {
+	if (shapeIndex < shapes.size() && pointIndex < shapes[shapeIndex].getPoints().size()) {
+		std::vector<Point> points = shapes[shapeIndex].getPoints();
+		points[pointIndex] = point;
+		shapes[shapeIndex].setPoints(points);
+	}
+}
+
+// 新增方法：通过索引获取所有标注的点
+std::vector<Point> Workspace::getShapePoints(size_t shapeIndex) const {
+	if (shapeIndex < shapes.size()) {
+		return shapes[shapeIndex].getPoints();
+	}
+	return {};
+}
+
+// 新增方法：通过索引设置所有标注的点
+void Workspace::setShapePoints(size_t shapeIndex, const std::vector<Point>& points) {
+	if (shapeIndex < shapes.size()) {
+		shapes[shapeIndex].setPoints(points);
+	}
+}
+
+// 新增方法：向标注中添加一个点
+void Workspace::addShapePoint(size_t shapeIndex, double x, double y) {
+	if (shapeIndex < shapes.size()) {
+		shapes[shapeIndex].addPoint(x, y);
+	}
+}
