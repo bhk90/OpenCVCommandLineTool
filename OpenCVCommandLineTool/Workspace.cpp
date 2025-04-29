@@ -95,16 +95,18 @@ void Workspace::importShapes(const std::vector<MyShape>& new_shapes) {
 /// ----------------------- JSON文件的读写 -----------------------
 // 读取标注文件
 bool Workspace::loadFromAnnotationFile() {
-	if (!fs::exists(annotation_path)) {
-		return false; // 标注文件不存在，返回 false
-	}
-
-	hasAnnotationFile = true;
-
 	std::ifstream file(annotation_path);
 	if (!file) {
 		return false;
 	}
+
+	hasAnnotationFile = true;
+
+	file.seekg(0, std::ios::end);
+	if (file.tellg() == 0) {
+		return false; // 空文件
+	}
+	file.seekg(0); // 重置读取位置
 
 	json j;
 	file >> j;
@@ -144,7 +146,7 @@ bool Workspace::saveToAnnotationFile() const {
 	}
 
 	json j;
-	j["image_path"] = image_path;
+	j["image_path"] = fs::path(image_path).u8string();
 	j["shapes"] = json::array();
 
 	for (const auto& shape : shapes) {
