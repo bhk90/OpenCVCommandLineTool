@@ -35,13 +35,11 @@ using json = nlohmann::json;
 namespace fs = std::filesystem;
 
 /// ----------------------- 构造函数 -----------------------
-Workspace::Workspace(const std::string& image_path)
-	: image(std::make_unique<MyImage>(image_path)),
-	image_path(image_path),
-	annotation_path((fs::path(image_path).parent_path() /
-		(fs::path(image_path).stem().string() + ".json")).string()),
-	mask_path((fs::path(image_path).parent_path() /
-		(fs::path(image_path).stem().string() + "_mask.png")).string()) {
+Workspace::Workspace(const std::filesystem::path& image_path)
+	: image(std::make_unique<MyImage>(image_path.string())),
+	image_path(image_path.string()),
+	annotation_path((image_path.parent_path() / (image_path.stem().string() + ".json")).string()),
+	mask_path((image_path.parent_path() / (image_path.stem().string() + "_mask.png")).string()) {
 	loadFromAnnotationFile();
 	loadFromMaskFile();
 }

@@ -56,12 +56,12 @@ private:
 	cv::Mat binary_mask;
 
 public:
-	Workspace(const std::string& image_path);
+	Workspace(const std::filesystem::path& image_path);
 
 	/// ----------------------- 获取 MyImage 引用 -----------------------
 	// 获取 MyImage 的引用
 	MyImage& getMyImage();
-
+	
 	// 获取 MyImage 的常量引用
 	const MyImage& getMyImage() const;
 

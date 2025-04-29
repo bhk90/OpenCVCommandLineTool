@@ -140,7 +140,7 @@ void CommandHandler::commandLoad(const std::vector<std::string>& args) {
 	}
 
 	try {
-		workspace = std::make_unique<Workspace>(path);
+		workspace = std::make_unique<Workspace>(std::filesystem::u8path(path));
 		std::cout << "Image loaded successfully: " << path << std::endl;
 	}
 	catch (const std::exception& e) {
@@ -265,15 +265,12 @@ void CommandHandler::commandModelProcessing(const std::vector<std::string>& args
 void CommandHandler::commandBatchModelProcessing(const std::vector<std::string>& args) {
 	yolo_processor = std::make_shared<YoloModelProcessor>(args[0]);
 	std::vector<std::string> imagePaths = { 
-	    "D:/wh/new-coding/testdata/data/images/6.jpg",
-	    "D:/wh/new-coding/testdata/data/images/7.jpg",
-	    "D:/wh/new-coding/testdata/data/images/8.jpg",
-	    "D:/wh/new-coding/testdata/data/images/9.jpg"
+	    "D:/wh/new-coding/testdata/error/7.jpg"
 		// ......
 	};
 
 	for (const auto& path : imagePaths) {
-		workspace = std::make_unique<Workspace>(path);
+		workspace = std::make_unique<Workspace>(std::filesystem::u8path(path));
 		workspace->runYoloModelProcessor(yolo_processor);
 		workspace->saveToAnnotationFile();
 		workspace->saveBinaryMaskAsPng();
